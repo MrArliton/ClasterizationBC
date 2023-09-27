@@ -57,7 +57,6 @@ struct cinfo{ // Contains information for clasterization
 
     ldouble attract_coef = 0.0000001;
     ldouble trend_coef = 1;
-    std::string distance_function = "euclidian";
 
     cinfo(std::vector<claster>& clasters_vec, size_t dim_size) :
      clasters(clasters_vec),
@@ -69,12 +68,10 @@ struct cinfo{ // Contains information for clasterization
 //Additional functions
 Matrix getDistanceMatrixOfClasters(const std::vector<cinfo::claster>& clasters, ldouble attract_coef, DistanceFunc dist = euclidianDistance);
 void updateDistanceMatrixOfClasters(cinfo& c_info, size_t coords_point_1, size_t coords_point_2); // Insert into matrix updated claster and delete two old
-void updateShiftsMatrixOfClasters(cinfo& c_info, size_t coords_point_1, size_t coords_point_2); // Update matrix for new cluster and make shifts for old 
 void clearNoises(cinfo& c_info, ldouble n, size_t l);
 
 //Work with clasterixation
 bool stopingCriteria(const cinfo& c_info);
-
 bool nextClasterizationIteration(cinfo& c_info);
 
 

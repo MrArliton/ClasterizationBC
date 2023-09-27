@@ -12,24 +12,26 @@ bool nextClasterizationIteration(cinfo& c_info){
     }
     //
 
-    // Find closest elements 
-    auto m_elems = getMinForDistance(c_info.matrix_dist);     
+    //// Find closest elements 
+    auto m_elems = getMinForDistance(c_info.matrix_dist);
 
-    size_t first_c = m_elems.first, second_c = m_elems.second;
-
-    c_info.last_min_distances.push_back(c_info.matrix_dist[first_c][second_c]);
+    // Add to the primitive distance vector  
+        c_info.last_min_distances.push_back(c_info.matrix_dist[m_elems.first][m_elems.second]);
     //
+    
+    size_t first_c = std::min(m_elems.first,m_elems.second), second_c = std::max(m_elems.first,m_elems.second);
+    ////
 
-    // Union clusters
+    //// Union clusters
 
     c_info.clasters[first_c].addPoints(c_info.clasters[second_c].getPoints());
 
     c_info.clasters.erase(c_info.clasters.begin()+second_c);
-    //
+    ////
 
-    // Update matrix of distances
+    //// Update matrix of distances
     updateDistanceMatrixOfClasters(c_info, first_c, second_c);
-    //
+    ////
     return true;
 }
 //-------------------------------------------------------------
@@ -156,13 +158,30 @@ std::optional<cinfo> importClasterizationDataJSON(std::ifstream file){
 }
 std::optional<cinfo> importClasterizationDataJSON(const json& j){
 
+   if(!j.contains("amount_clasters") ||
+    !j.contains("clasters") ||
+    !j.contains("size_dimension")){
+        std::cout << "Incorrect json: " << j << std::endl;
+        std::exit(EXIT_FAILURE);
+    }
+
    size_t amount_clasters = j["amount_clasters"].template get<size_t>();
    size_t size_dimension = j["size_dimension"].template get<size_t>();
    json j_clasters = j["clasters"];
 
    std::vector<cinfo::claster> clasters;
-   
+
+   size_t amount_of_incorrect_clusters = 0;
    for(int i = 0;i < amount_clasters;i++){
+        
+        if(!j_clasters[i].contains("id") ||
+        !j_clasters[i].contains("size") ||
+        !j_clasters[i].contains("points")){
+            amount_of_incorrect_clusters++;
+            std::cout << "\rIncorrect clasters: " << amount_of_incorrect_clusters << std::flush;
+            continue;    
+        }
+
         clasters.emplace_back(j_clasters[i]["id"].template get<size_t>(),size_dimension);
         const size_t size_claster = j_clasters[i]["size"].template get<size_t>();
         for(int j = 0; j < size_claster;j++){
@@ -170,6 +189,7 @@ std::optional<cinfo> importClasterizationDataJSON(const json& j){
         }
         
    }    
+   std::cout << std::endl;
    cinfo c_info(clasters,size_dimension); 
    return c_info;
 }
@@ -207,7 +227,7 @@ bool stopingCriteria(const cinfo& c_info){ // Calculating criteria of stopping u
     if(last_min_distances.size() < 4){
         return false;    
     }
-
+    
     size_t i = last_min_distances.size()-1;
     ldouble y_3 = last_min_distances[i];
     i--;

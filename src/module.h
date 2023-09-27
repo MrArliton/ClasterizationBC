@@ -9,7 +9,6 @@
 #include <functional>
 #include <utility>
 #include <fstream>
-#include "omp.h"
 
 #if DEBUG == ON
     #include <ctime> 
