@@ -1,7 +1,7 @@
 
-void startClasterization(std::string input, std::string output, ldouble n_attract_coef, ldouble n_trend_coef){
+void startClasterization(std::string input, std::string output, ldouble n_attract_coef, ldouble n_trend_coef, size_t size){
 
-    json j_2 = convertCSVToJSONForUPGMC(input,2000);
+    json j_2 = convertCSVToJSONForUPGMC(input,size);
 
     upgmc::cinfo c_info_2 = *upgmc::importClasterizationDataJSON(j_2);
     std::cout << "Clasterization data imported from " << input << "\n";
@@ -48,6 +48,11 @@ int main(int argc, char *args[]) {
     .default_value(static_cast<ldouble>(1))
     .scan<'g', ldouble>();
 
+    program.add_argument("-s", "--size")
+    .help("Sensitivity factor: 0 - Largest number of clusters, >0 - Reducing the number of clusters")
+    .default_value(static_cast<size_t>(2000))
+    .scan<'i', size_t>();
+
     program.add_argument("-i", "--input")
     .default_value(std::string("input.csv"))
     .required()
@@ -68,10 +73,11 @@ int main(int argc, char *args[]) {
     }
     auto attract_coef = program.get<ldouble>("-a");
     auto trend_coef = program.get<ldouble>("-t");
+    auto size = program.get<size_t>("-s");
     auto output = program.get<std::string>("-o");
     auto input = program.get<std::string>("-i");
     
 
-    startClasterization(input, output ,attract_coef, trend_coef);
+    startClasterization(input, output ,attract_coef, trend_coef, size);
     return EXIT_SUCCESS;
 }

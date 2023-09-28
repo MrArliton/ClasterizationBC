@@ -12,7 +12,7 @@
             "cwd": "${workspaceFolder}",
             "MIMode": "gdb",
             "miDebuggerPath": "C:/msys64/ucrt64/bin/gdb.exe",    
-            "args": ["-i","C:/Projects/ClasterizationBC/files_for_test/CD3_W.csv","-o", "C:/Projects/ClasterizationBC/files_for_test/CD3_W.json"],
+            "args": ["-i","C:/Projects/ClasterizationBC/files_for_test/CD3_W.csv","-o", "C:/Projects/ClasterizationBC/files_for_test/CD3_W.json", "-a", "0.0000001","-t","1"],
             "preLaunchTask": "Build CMAKE",
         }
       
