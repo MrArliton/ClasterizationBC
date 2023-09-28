@@ -56,7 +56,7 @@ void writeMatrix(const Matrix& mat, std::ostream& stream = std::cout){
     int height = mat.front().size();
     for(int y = 0;y < height;y++){
         for(int x = 0;x < width;x++){
-            stream << mat[x][y] << " ";
+            stream << std::setw(10) << mat[x][y] << " ";
         }
         stream << "\n";
     }

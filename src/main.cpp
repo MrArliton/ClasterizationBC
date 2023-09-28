@@ -9,26 +9,26 @@ void startClasterization(std::string input, std::string output, ldouble n_attrac
     c_info_2.attract_coef = n_attract_coef;
     c_info_2.trend_coef = n_trend_coef;
 
-    size_t start_time ,end_time;
+
 
     std::cout << "Start clearing noise" << "\n";
-    start_time = clock();
+    auto start_time = std::chrono::steady_clock::now();
     upgmc::clearNoises(c_info_2, 2, 50);
-    end_time = clock();
-    std::cout << "End clearing noise, time: " << end_time - start_time << "ms\n";    
+    auto end_time = std::chrono::steady_clock::now();
+    std::cout << "End clearing noise, time: " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << "ns\n";    
 
     std::cout << "Start clasterization" << "\n";
-    start_time = clock();
+    start_time = std::chrono::steady_clock::now();
     size_t iteration = 0; 
     while(!upgmc::stopingCriteria(c_info_2)){
         if(!upgmc::nextClasterizationIteration(c_info_2)) break;
         std::cout << "\rIteration: " << iteration << std::flush;
         iteration++;
     }
-    end_time = clock();
+    end_time = std::chrono::steady_clock::now();
     std::cout << "\rDone" << std::endl;
 
-    std::cout << "End clasterization, time:" << end_time - start_time << "ms\n";
+    std::cout << "End clasterization, time:" << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << "ns\n";
     
     upgmc::exportClasterizationDataJSON(c_info_2, output); 
     std::cout << "Clasterization data exported in " << output << "\n";
@@ -50,7 +50,7 @@ int main(int argc, char *args[]) {
 
     program.add_argument("-s", "--size")
     .help("Sensitivity factor: 0 - Largest number of clusters, >0 - Reducing the number of clusters")
-    .default_value(static_cast<size_t>(2000))
+    .default_value(static_cast<size_t>(1000))
     .scan<'i', size_t>();
 
     program.add_argument("-i", "--input")

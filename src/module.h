@@ -9,10 +9,7 @@
 #include <functional>
 #include <utility>
 #include <fstream>
-
-#if DEBUG == ON
-    #include <ctime> 
-#endif
+#include <chrono>
 
 #include "../include/json.hpp"
 using json = nlohmann::json;

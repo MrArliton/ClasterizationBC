@@ -53,6 +53,7 @@ struct cinfo{ // Contains information for clasterization
 
     // For Clasterization Process
     Matrix matrix_dist;
+    Vector removed_indexes_mdist;
     Vector last_min_distances;
 
     ldouble attract_coef = 0.0000001;
@@ -67,7 +68,7 @@ struct cinfo{ // Contains information for clasterization
 
 //Additional functions
 Matrix getDistanceMatrixOfClasters(const std::vector<cinfo::claster>& clasters, ldouble attract_coef, DistanceFunc dist = euclidianDistance);
-void updateDistanceMatrixOfClasters(cinfo& c_info, size_t coords_point_1, size_t coords_point_2); // Insert into matrix updated claster and delete two old
+void updateDistanceMatrixOfClasters(cinfo& c_info, size_t coords_point_1, size_t coords_point_2, size_t coords_point_1_shift); // Insert into matrix updated claster and delete two old
 void clearNoises(cinfo& c_info, ldouble n, size_t l);
 
 //Work with clasterixation

@@ -9,6 +9,7 @@ bool nextClasterizationIteration(cinfo& c_info){
     // Default prepearing
     if(c_info.matrix_dist.size()==0){
         c_info.matrix_dist = getDistanceMatrixOfClasters(c_info.clasters, c_info.attract_coef);
+        c_info.removed_indexes_mdist.resize(c_info.clasters.size());
     }
     //
 
@@ -23,14 +24,21 @@ bool nextClasterizationIteration(cinfo& c_info){
     ////
 
     //// Union clusters
+    size_t shift_first_c = 0, shift_second_c;
+    for(int i = 0;i < first_c;i++){ if(c_info.removed_indexes_mdist[i]) shift_first_c++;} 
+    shift_second_c = shift_first_c;
+    for(int i = first_c;i < second_c;i++){ if(c_info.removed_indexes_mdist[i]) shift_second_c++;}
 
-    c_info.clasters[first_c].addPoints(c_info.clasters[second_c].getPoints());
+    c_info.clasters[first_c - shift_first_c].addPoints(c_info.clasters[second_c- shift_second_c].getPoints());
 
-    c_info.clasters.erase(c_info.clasters.begin()+second_c);
+    c_info.clasters.erase(c_info.clasters.begin()+second_c - shift_second_c);
     ////
-
+    c_info.removed_indexes_mdist[second_c]++;
     //// Update matrix of distances
-    updateDistanceMatrixOfClasters(c_info, first_c, second_c);
+    auto start_time = std::chrono::steady_clock::now();
+    updateDistanceMatrixOfClasters(c_info, first_c, second_c, shift_first_c);
+    auto end_time = std::chrono::steady_clock::now();
+    std::cout << "Time of update matrix " << std::chrono::duration_cast<std::chrono::nanoseconds>(end_time - start_time).count() << "ns\n";    
     ////
     return true;
 }
@@ -56,39 +64,45 @@ Matrix getDistanceMatrixOfClasters(const std::vector<cinfo::claster>& clasters, 
     }
     return dmat;
 }
-void updateDistanceMatrixOfClasters(cinfo& c_info, size_t coords_point_1, size_t coords_point_2){
+void updateDistanceMatrixOfClasters(cinfo& c_info, size_t coords_point_1, size_t coords_point_2, size_t coords_point_1_shift){
     Matrix& mat = c_info.matrix_dist;
     DistanceFunc dist = euclidianDistance;
     const ldouble attract_coef = c_info.attract_coef;
 
-    mat.erase(mat.begin()+coords_point_2);
-
-    for(int i = 0;i < mat.size();i++){
-        mat[i].erase(mat[i].begin()+coords_point_2);
-    }
-
-    if(coords_point_1 > coords_point_2){ // After erasing, the ids moved one to left 
-        coords_point_1--;
-    }
-
+    size_t shift = 0;
     for(int i = 0; i < coords_point_1;i++){
-        const ldouble buff = dist(c_info.clasters[i].getCenter(),c_info.clasters[coords_point_1].getCenter())
-             - attract_coef * c_info.clasters[i].getSize() * c_info.clasters[coords_point_1].getSize();
-            if(buff < 0){
-                mat[coords_point_1][i] = 0; 
-            }else{
-                mat[coords_point_1][i] = buff;
-            }
+        if(!c_info.removed_indexes_mdist[i]){
+            const ldouble buff = dist(c_info.clasters[i-shift].getCenter(),c_info.clasters[coords_point_1-coords_point_1_shift].getCenter())
+                - attract_coef * c_info.clasters[i-shift].getSize() * c_info.clasters[coords_point_1-coords_point_1_shift].getSize();
+                if(buff < 0){
+                    mat[coords_point_1][i] = 0; 
+                }else{
+                    mat[coords_point_1][i] = buff;
+                }
+        }else{
+            shift++;
+        }
     }
     for(int i = coords_point_1+1;i < mat.size();i++){
-        const ldouble buff = dist(c_info.clasters[i].getCenter(),c_info.clasters[coords_point_1].getCenter())
-             - attract_coef * c_info.clasters[i].getSize() * c_info.clasters[coords_point_1].getSize();
+        if(!c_info.removed_indexes_mdist[i]){
+        const ldouble buff = dist(c_info.clasters[i-shift].getCenter(),c_info.clasters[coords_point_1-coords_point_1_shift].getCenter())
+             - attract_coef * c_info.clasters[i-shift].getSize() * c_info.clasters[coords_point_1-coords_point_1_shift].getSize();
             if(buff < 0){
                 mat[i][coords_point_1] = 0; 
             }else{
                 mat[i][coords_point_1] = buff;
             }
+        }else{
+            shift++;
+        }
     }
+    // coord_point_2
+    for(int i = 0;i < coords_point_2;i++){
+        mat[coords_point_2][i] = static_cast<ldouble>(INT_MAX);
+    }
+    for(int i = coords_point_2+1;i < mat.size();i++){
+        mat[i][coords_point_2] = static_cast<ldouble>(INT_MAX);
+    } 
 }
 
 
