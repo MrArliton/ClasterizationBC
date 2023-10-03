@@ -15,15 +15,24 @@ struct cinfo{ // Contains information for clasterization
 
             void addPoints(const Matrix& n_points){
                 const size_t dimension_size = coords_center.size();
-                
+                const size_t old_size = size;
+
+                for(int i = 0;i < dimension_size;i++){
+                    coords_center[i]*=old_size;
+                }
+
                 size += n_points.size();
                 
+                points.insert(points.end(),n_points.begin(),n_points.end());
+
                 for(int i = 0;i < n_points.size();i++){
-                    points.push_back(n_points[i]);
                     for(int j = 0;j < dimension_size;j++){
-                        coords_center[j] = (coords_center[j]*(size-1)+n_points[i][j])/(size);
+                        coords_center[j] += n_points[i][j];
                     }        
-                }            
+                }  
+                for(int i = 0;i < dimension_size;i++){
+                    coords_center[i]/=size;
+                }          
             };    
 
             void addPoint(const Vector& point){
